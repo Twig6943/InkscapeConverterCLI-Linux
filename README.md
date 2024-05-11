@@ -15,3 +15,7 @@ wget https://raw.githubusercontent.com/Twig6943/InkscapeConverterCLI-Linux/main/
 chmod +x converter.sh
 ./converter.sh
 ```
+
+## Known issues
+For svg to sif conversion see
+https://www.youtube.com/watch?v=ytYHqIHow8I&t=320s
