@@ -12,6 +12,6 @@ Requires native inkscape package! (At least for now)
 ### Usage
 ```
 wget https://raw.githubusercontent.com/Twig6943/InkscapeConverterCLI-Linux/main/converter.sh
-chmod +x InkscapeConverterCLI-Linux/main/converter.sh
-./InkscapeConverterCLI-Linux/main/converter.sh
+chmod +x converter.sh
+./converter.sh
 ```
