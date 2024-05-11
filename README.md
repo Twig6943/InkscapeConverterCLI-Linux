@@ -18,4 +18,4 @@ chmod +x converter.sh
 
 ## Known issues
 For svg to sif conversion see
-https://www.youtube.com/watch?v=ytYHqIHow8I&t=320s
+https://www.youtube.com/watch?v=ytYHqIHow8I
