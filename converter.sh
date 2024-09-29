@@ -29,8 +29,20 @@ elif [ -x "$inkscapePath3" ]; then
 elif [ -x "$inkscapePath4" ]; then
     inkscapePath="$inkscapePath4"
 else
-    echo "Can't find Inkscape installation, aborting."
-    exit 1
+    # Ask the user if they are using the AppImage
+    read -p "Inkscape binary not found. Are you using an AppImage? (y/n): " appImageResponse
+    if [ "$appImageResponse" == "y" ]; then
+        read -p "Please enter the path to the Inkscape AppImage: " appImagePath
+        if [ -x "$appImagePath" ]; then
+            inkscapePath="$appImagePath"
+        else
+            echo "The AppImage file is not executable or does not exist. Aborting."
+            exit 1
+        fi
+    else
+        echo "Can't find Inkscape installation, aborting."
+        exit 1
+    fi
 fi
 
 validInput1="svg"
