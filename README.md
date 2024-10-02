@@ -5,8 +5,6 @@ All of this was written by ChatGPT 3.5
 
 I just wanted to get some files converted
 
-Requires native inkscape package! (At least for now)
-
 (PRs are welcome)
 
 ### Usage
