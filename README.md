@@ -7,19 +7,19 @@
 # Features
 -Works with flatpak/appimage/native pkgs
 
+# Usage
+```
+wget https://raw.githubusercontent.com/Twig6943/InkscapeConverterCLI-Linux/main/converter.sh
+chmod +x converter.sh
+./converter.sh
+```
+
 # Disclaimer 
 All of this was written by ChatGPT 3.5 
 
 I just wanted to get some files converted.
 
 (Pull Requests are welcome)
-
-### Usage
-```
-wget https://raw.githubusercontent.com/Twig6943/InkscapeConverterCLI-Linux/main/converter.sh
-chmod +x converter.sh
-./converter.sh
-```
 
 ## Known issues
 For svg to sif conversion see
