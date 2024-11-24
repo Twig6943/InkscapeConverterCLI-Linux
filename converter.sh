@@ -13,24 +13,31 @@ fi
 outputDirectory="$inputDirectory/output"
 
 # Possible paths to check for the installation
-inkscapePath1="/usr/bin/inkscape"
-inkscapePath2="/usr/local/bin/inkscape"
-inkscapePath3="/usr/bin/inkscape-bin"
-inkscapePath4="/usr/local/bin/inkscape-bin"
+inkscapePaths=(
+    "/usr/bin/inkscape"
+    "/usr/local/bin/inkscape"
+    "/usr/bin/inkscape-bin"
+    "/usr/local/bin/inkscape-bin"
+    "$(flatpak info org.inkscape.Inkscape &>/dev/null && echo 'flatpak')"
+)
 
-inkscapePath=""
+availableInkscapes=()
 
-if [ -x "$inkscapePath1" ]; then
-    inkscapePath="$inkscapePath1"
-elif [ -x "$inkscapePath2" ]; then
-    inkscapePath="$inkscapePath2"
-elif [ -x "$inkscapePath3" ]; then
-    inkscapePath="$inkscapePath3"
-elif [ -x "$inkscapePath4" ]; then
-    inkscapePath="$inkscapePath4"
-else
-    # Ask the user if they are using the AppImage
-    read -p "Inkscape binary not found. Are you using an AppImage? (y/n): " appImageResponse
+# Find available Inkscape installations
+for path in "${inkscapePaths[@]}"; do
+    if [ "$path" == "flatpak" ]; then
+        flatpakInkscape="$(flatpak list | grep -o 'org.inkscape.Inkscape')"
+        if [ -n "$flatpakInkscape" ]; then
+            availableInkscapes+=("$flatpakInkscape (Flatpak)")
+        fi
+    elif [ -x "$path" ]; then
+        availableInkscapes+=("$path")
+    fi
+done
+
+# Prompt the user to choose an Inkscape installation
+if [ "${#availableInkscapes[@]}" -eq 0 ]; then
+    read -p "No Inkscape installation found. Are you using an AppImage? (y/n): " appImageResponse
     if [ "$appImageResponse" == "y" ]; then
         read -p "Please enter the path to the Inkscape AppImage: " appImagePath
         if [ -x "$appImagePath" ]; then
@@ -40,59 +47,64 @@ else
             exit 1
         fi
     else
-        echo "Can't find Inkscape installation, aborting."
+        echo "No Inkscape installation found. Aborting."
         exit 1
+    fi
+else
+    echo "Available Inkscape installations:"
+    for i in "${!availableInkscapes[@]}"; do
+        echo "$((i + 1))) ${availableInkscapes[i]}"
+    done
+    read -p "Choose the Inkscape installation to use (1-${#availableInkscapes[@]}): " choice
+    if ! [[ "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#availableInkscapes[@]}" ]; then
+        echo "Invalid choice. Aborting."
+        exit 1
+    fi
+    selectedPath="${availableInkscapes[$((choice - 1))]}"
+    if [[ "$selectedPath" == *"(Flatpak)"* ]]; then
+        inkscapePath="flatpak run org.inkscape.Inkscape"
+    else
+        inkscapePath="$selectedPath"
     fi
 fi
 
-validInput1="svg"
-validInput2="pdf"
-validInput3="eps"
-validInput4="emf"
-validInput5="wmf"
-validInput6="sif"
+# Allowed file types
+validInput=("svg" "pdf" "eps" "emf" "wmf" "sif")
+validOutput=("eps" "pdf" "png" "svg" "sif")
 
-validOutput1="eps"
-validOutput2="pdf"
-validOutput3="png"
-validOutput4="svg"
-validOutput5="sif"
-
-inkscapeVersion="$("$inkscapePath" --version)"
-inkscapeMajorVersion="${inkscapeVersion:9:1}"
-
+inkscapeVersion="$($inkscapePath --version)"
 echo ""
 echo "This script allows you to convert all files in $inputDirectory from one file type to another"
 echo "Running with $inkscapeVersion"
 echo "(type q to quit at any question)"
 echo ""
 
-echo "Allowed file types for source: $validInput1, $validInput2, $validInput3, $validInput4, $validInput5, $validInput6"
-
+# Choose source type
+echo "Allowed file types for source: ${validInput[*]}"
 while true; do
     read -p "What file type do you want to use as a source? " sourceType
     if [[ "$sourceType" == "q" ]]; then
         exit 0
     fi
-    if [[ "$sourceType" == "$validInput1" || "$sourceType" == "$validInput2" || "$sourceType" == "$validInput3" || "$sourceType" == "$validInput4" || "$sourceType" == "$validInput5" || "$sourceType" == "$validInput6" ]]; then
+    if [[ " ${validInput[*]} " == *" $sourceType "* ]]; then
         break
     else
-        echo "Invalid input! Please use one of the following: $validInput1, $validInput2, $validInput3, $validInput4, $validInput5, $validInput6"
+        echo "Invalid input! Please use one of the following: ${validInput[*]}"
     fi
 done
 
+# Choose output type
 echo ""
-echo "Allowed file types for output: $validOutput1, $validOutput2, $validOutput3, $validOutput4, $validOutput5"
-
+echo "Allowed file types for output: ${validOutput[*]}"
 while true; do
     read -p "What file type do you want to convert to? " outputType
     if [[ "$outputType" == "q" ]]; then
         exit 0
     fi
-    if [[ "$outputType" == "$validOutput1" || "$outputType" == "$validOutput2" || "$outputType" == "$validOutput3" || "$outputType" == "$validOutput4" || "$outputType" == "$validOutput5" ]]; then
+    if [[ " ${validOutput[*]} " == *" $outputType "* ]]; then
         break
     else
-        echo "Invalid input! Please use one of the following: $validOutput1, $validOutput2, $validOutput3, $validOutput4, $validOutput5"
+        echo "Invalid input! Please use one of the following: ${validOutput[*]}"
     fi
 done
 
@@ -100,8 +112,6 @@ if [[ "$outputType" == "$sourceType" ]]; then
     echo "Input and Output are the same, no point in doing anything. Exiting..."
     exit 0
 fi
-
-echo ""
 
 # Create the output directory if it doesn't exist
 mkdir -p "$outputDirectory"
@@ -115,7 +125,7 @@ count=0
 for file in "$inputDirectory"/*."$sourceType"; do
     ((count++))
     echo "$file -> $outputDirectory/$(basename "$file" ".$sourceType").$outputType [$count/$total]"
-    "$inkscapePath" --export-type="$outputType" --export-dpi=300 --batch-process "$file" --export-filename="$outputDirectory/$(basename "$file" ".$sourceType").$outputType"
+    $inkscapePath --export-type="$outputType" --export-dpi=300 --batch-process "$file" --export-filename="$outputDirectory/$(basename "$file" ".$sourceType").$outputType"
 done
 
 echo ""
