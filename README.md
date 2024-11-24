@@ -1,9 +1,13 @@
 # InkscapeConverterCLI-Linux
-A command-line utility to convert files using Inkscape.
+### A command-line utility to convert files using Inkscape.
 
+# Features
+-Works with flatpak/appimage/native pkgs
+
+# Other 
 All of this was written by ChatGPT 3.5 
 
-I just wanted to get some files converted
+I just wanted to get some files converted.
 
 (PRs are welcome)
 
