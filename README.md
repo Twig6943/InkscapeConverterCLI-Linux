@@ -2,7 +2,7 @@
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Inkscape_Logo.svg" width="200"/>
 
-### A command-line utility to convert files using Inkscape.
+### A command-line utility to convert files using Inkscape
 
 # Features
 -Works with flatpak/appimage/native pkgs
