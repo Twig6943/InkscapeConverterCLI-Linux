@@ -5,7 +5,7 @@
 ### A command-line utility to convert files using Inkscape
 
 # Features
--Works with flatpak/appimage/native pkgs
+• Works with flatpak/appimage/native pkgs
 
 # Usage
 ```
